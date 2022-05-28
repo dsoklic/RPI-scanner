@@ -18,14 +18,14 @@ def get_credentials():
     return (config['General']['username'], config['General']['password'])
 
 def scan_to_file(file_path):
-    cmd = f"scanimage -b --format png -d 'fujitsu:ScanSnap S1500:2314' --source 'Otocec scanner' --resolution 200 > {file_path}"
+    cmd = f"scanimage --format png -d 'pixma:04A9173A_E03077' --resolution 150 > {file_path}"
     subprocess.run(cmd, shell=True)
 
 def send_file(file_path):
     # Set basic info
     message = EmailMessage()
     message['From'] = 'soklicd@gmail.com'
-    message['To'] = 'soklicd@gmail.com'
+    message['To'] = 'soklicd@gmail.com, vanda.gabron@gmail.com'
     message['Subject'] = 'Nov skeniran dokument'
 
     body = 'Dokument poskeniran ob: ' + str(datetime.datetime.now())
@@ -50,6 +50,7 @@ def send_file(file_path):
     mail_server.quit()
 
 def button_pressed(channel):
+    print("scan button pressed")
     with tempfile.NamedTemporaryFile(dir='/dev/shm/', suffix='.png') as fp:
         print(f'Created temp file {fp.name}')
         scan_to_file(fp.name)
@@ -57,12 +58,9 @@ def button_pressed(channel):
 
     print("file sent")
 
-
-
-
-
-
-
+    # Workaround because the buton event triggered twice for some reason
+    GPIO.remove_event_detect(17)
+    GPIO.add_event_detect(17, GPIO.FALLING, callback=button_pressed, bouncetime=2000)
 
 GPIO.add_event_detect(17, GPIO.FALLING, callback=button_pressed, bouncetime=2000)
 
